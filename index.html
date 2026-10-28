@@ -2,90 +2,62 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DESI TDM - 40x30 Fixed Map</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ROHANA TDM - Full Map</title>
 <style>
- body{margin:0;overflow:hidden;background:#d2b48c}
- #info{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.75);color:#fff;padding:10px 15px;border-radius:10px;font-size:13px;line-height:1.4}
+ body{margin:0;overflow:hidden;background:#d2b48c;touch-action:none}
+ #info{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.75);color:#fff;padding:8px 12px;border-radius:8px;font-size:11px;z-index:10}
+ #joy{position:absolute;bottom:20px;left:20px;width:130px;height:130px;background:rgba(255,255,255,0.25);border-radius:50%;border:2px solid rgba(255,255,255,0.4);z-index:10}
+ #knob{position:absolute;width:55px;height:55px;background:rgba(255,255,255,0.9);border-radius:50%;left:37px;top:37px}
+ #cam{position:absolute;top:0;right:0;width:65%;height:100%;z-index:5}
 </style>
-<script type="importmap">
-{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
-</script>
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 </head>
 <body>
-<div id="info">🚜 DESI TDM - 40x30m FIXED<br>
-WASD = Daudo | Mouse dabake ghumao<br>
-Speed: 6.2 m/s Sprint (BGMI Exact)<br>
-Ek kone se dusre kone tak: ~8 sec</div>
+<div id="info">🚜 ROHANA TDM - FULL MAP<br>Photo wala sab kuch hai!</div>
+<div id="joy"><div id="knob"></div></div><div id="cam"></div>
 <script type="module">
 import * as THREE from 'three';
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xE8D5B5);
-scene.fog = new THREE.Fog(0xE8D5B5, 25, 80);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xE8D5B5); scene.fog=new THREE.Fog(0xE8D5B5,20,70);
+const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setSize(window.innerWidth,window.innerHeight); renderer.shadowMap.enabled=true; document.body.appendChild(renderer.domElement);
+const sun=new THREE.DirectionalLight(0xffffff,1.1); sun.position.set(20,30,10); sun.castShadow=true; scene.add(sun); scene.add(new THREE.AmbientLight(0xffffff,0.7));
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(40,30),new THREE.MeshStandardMaterial({color:0xC49A6C})); floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+function wall(x,z,w,d,c=0xB94E48){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,2.5,d),new THREE.MeshStandardMaterial({color:c})); m.position.set(x,1.25,z); m.castShadow=true; m.receiveShadow=true; scene.add(m); }
+// Outer boundary
+wall(0,15,16,1); wall(0,-15,16,1); wall(-20,0,1,30); wall(20,0,1,30);
+wall(12,15,16,1); wall(-12,15,16,1); wall(12,-15,16,1); wall(-12,-15,16,1);
+// L-walls - 4 corners me jaise photo me hai
+function Lwall(x,z,rot=0){ const g=new THREE.Group(); const a=new THREE.Mesh(new THREE.BoxGeometry(3,2,0.8),new THREE.MeshStandardMaterial({color:0xB94E48})); a.position.set(1.2,1,0); const b=new THREE.Mesh(new THREE.BoxGeometry(0.8,2,3),new THREE.MeshStandardMaterial({color:0xB94E48})); b.position.set(0,1,1.2); g.add(a,b); g.position.set(x,0,z); g.rotation.y=rot; scene.add(g); }
+Lwall(-17,7,0); Lwall(17,7,1.57); Lwall(-17,-7,4.7); Lwall(17,-7,3.14);
+// Central Bunker - photo jaisa bada
+const centerGroup=new THREE.Group();
+const base=new THREE.Mesh(new THREE.BoxGeometry(7,1.2,5),new THREE.MeshStandardMaterial({color:0xD2A679})); base.position.y=0.6; centerGroup.add(base);
+for(let pos of [[-2.5,0,1.5],[2.5,0,1.5],[-2.5,0,-1.5],[2.5,0,-1.5]]){ const bale=new THREE.Mesh(new THREE.BoxGeometry(1.2,1,0.9),new THREE.MeshStandardMaterial({color:0xD9B25F})); bale.position.set(pos[0],1.2,pos[2]); centerGroup.add(bale); }
+centerGroup.position.set(0,0,0); scene.add(centerGroup);
+// Curved fences - 4 taraf
+function curvedFence(x,z,rot){ const g=new THREE.Group(); for(let i=0;i<6;i++){ const p=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.8,0.6),new THREE.MeshStandardMaterial({color:0x8B5A2B})); p.position.set(Math.sin(i*0.3)*2,0.4,Math.cos(i*0.3)*0.5); p.rotation.y=i*0.3; g.add(p); } g.position.set(x,0,z); g.rotation.y=rot; scene.add(g); }
+curvedFence(-4,4.5,0.5); curvedFence(4,4.5,-0.5); curvedFence(-4,-4.5,-0.5); curvedFence(4,-4.5,0.5);
+// Haystack clusters & Trolleys - exact photo positions
+function hay(x,z,s=1){ const m=new THREE.Mesh(new THREE.CylinderGeometry(0.7*s,0.8*s,1.2,8),new THREE.MeshStandardMaterial({color:0xE6C27A})); m.position.set(x,0.6,z); m.castShadow=true; scene.add(m); }
+function hayCluster(x,z){ for(let i=0;i<4;i++) hay(x+(Math.random()-0.5)*1.5, z+(Math.random()-0.5)*1.5, 1); }
+function trolley(x,z,rot){ const g=new THREE.Group(); const body=new THREE.Mesh(new THREE.BoxGeometry(2,0.8,3.2),new THREE.MeshStandardMaterial({color:0x6B4423})); body.position.y=0.4; const hayLoad=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.6,2.5),new THREE.MeshStandardMaterial({color:0xE6C27A})); hayLoad.position.y=1.1; g.add(body,hayLoad); g.position.set(x,0,z); g.rotation.y=rot; g.castShadow=true; scene.add(g); }
+// Positions as per photo
+trolley(-13,9,0.8); trolley(13,9,-0.8); trolley(-13,-9,-0.8); trolley(13,-9,0.8);
+hayCluster(-10,1); hayCluster(10,1); hayCluster(-9,10); hayCluster(9,10); hayCluster(-9,-10); hayCluster(9,-10);
+// Small hay scatters
+for(let i=0;i<12;i++) hay((Math.random()-0.5)*36, (Math.random()-0.5)*26, 0.5);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
-
-const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-sun.position.set(20,30,10); sun.castShadow=true;
-scene.add(sun); scene.add(new THREE.AmbientLight(0xffffff,0.6));
-
-// Floor 40x30 - Mitti
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(40,30), new THREE.MeshStandardMaterial({color:0xC19A6B}));
-floor.rotation.x = -Math.PI/2; floor.receiveShadow=true; scene.add(floor);
-const grid = new THREE.GridHelper(40,20,0x8B7355,0x8B7355); grid.position.y=0.02; scene.add(grid);
-
-function wall(x,z,w,d,color=0xB94E48){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(w,2.5,d), new THREE.MeshStandardMaterial({color}));
-  m.position.set(x,1.25,z); m.castShadow=true; scene.add(m);
-}
-wall(0,15,40,1); wall(0,-15,40,1); wall(-20,0,1,30); wall(20,0,1,30);
-wall(0,0,6,4,0xD2A679);
-
-function hay(x,z){
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.9,1.2,8), new THREE.MeshStandardMaterial({color:0xE6C27A}));
-  m.position.set(x,0.6,z); scene.add(m);
-}
-function trolley(x,z){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(2,1,3), new THREE.MeshStandardMaterial({color:0x8B5A2B}));
-  m.position.set(x,0.5,z); m.castShadow=true; scene.add(m); hay(x+1.2,z);
-}
-trolley(-12,8); trolley(12,8); trolley(-12,-8); trolley(12,-8);
-[[-10,0],[10,0],[-10,10],[10,10],[-10,-10],[10,-10]].forEach(p=>{
-  for(let i=0;i<3;i++) hay(p[0]+(Math.random()-0.5)*2, p[1]+(Math.random()-0.5)*2);
-});
-
-// Player
-const player = new THREE.Mesh(new THREE.CapsuleGeometry(0.4,1,4,8), new THREE.MeshStandardMaterial({color:0x222}));
-player.position.set(0,1,-12); scene.add(player);
-
-let keys={}; addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
-addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-let yaw=0;
-addEventListener('mousemove',e=>{ if(e.buttons===1) yaw-=e.movementX*0.005; });
-
-// BGMI EXACT SPEED - 6.2 m/s
-// 60 FPS pe 6.2 / 60 = 0.103 per frame
-const BGMI_SPRINT_SPEED = 0.103;
-
-function animate(){
-  requestAnimationFrame(animate);
-  const fwd = new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
-  const right = new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
-  if(keys['w']) player.position.addScaledVector(fwd, BGMI_SPRINT_SPEED);
-  if(keys['s']) player.position.addScaledVector(fwd, -BGMI_SPRINT_SPEED);
-  if(keys['a']) player.position.addScaledVector(right, -BGMI_SPRINT_SPEED);
-  if(keys['d']) player.position.addScaledVector(right, BGMI_SPRINT_SPEED);
-  player.position.x=Math.max(-18,Math.min(18,player.position.x));
-  player.position.z=Math.max(-13,Math.min(13,player.position.z));
-  camera.position.set(player.position.x + Math.sin(yaw)*8, player.position.y+4, player.position.z + Math.cos(yaw)*8);
-  camera.lookAt(player.position);
-  renderer.render(scene,camera);
-}
-animate();
+const player=new THREE.Mesh(new THREE.CapsuleGeometry(0.4,1,4,8),new THREE.MeshStandardMaterial({color:0x111})); player.position.set(0,1,-12); scene.add(player);
+let yaw=0, moveX=0, moveZ=0; const joy=document.getElementById('joy'), knob=document.getElementById('knob'); let active=false, cx=0, cy=0;
+joy.addEventListener('touchstart',e=>{ active=true; const r=joy.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2; e.preventDefault(); },{passive:false});
+joy.addEventListener('touchmove',e=>{ if(!active) return; const t=e.touches[0]; let dx=t.clientX-cx, dy=t.clientY-cy; const max=45; const dist=Math.sqrt(dx*dx+dy*dy); if(dist>max){ dx=dx/dist*max; dy=dy/dist*max; } knob.style.left=(37+dx)+'px'; knob.style.top=(37+dy)+'px'; moveX=dx/max; moveZ=dy/max; e.preventDefault(); },{passive:false});
+joy.addEventListener('touchend',e=>{ active=false; knob.style.left='37px'; knob.style.top='37px'; moveX=0; moveZ=0; e.preventDefault(); });
+const camArea=document.getElementById('cam'); let lastX=0;
+camArea.addEventListener('touchstart',e=>{ lastX=e.touches[0].clientX; },{passive:false});
+camArea.addEventListener('touchmove',e=>{ const dx=e.touches[0].clientX-lastX; yaw-=dx*0.01; lastX=e.touches[0].clientX; e.preventDefault(); },{passive:false});
+const SPEED=0.11;
+function animate(){ requestAnimationFrame(animate); const fwd=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)); const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)); player.position.addScaledVector(fwd,-moveZ*SPEED); player.position.addScaledVector(right,moveX*SPEED); player.position.x=Math.max(-18,Math.min(18,player.position.x)); player.position.z=Math.max(-13,Math.min(13,player.position.z)); camera.position.set(player.position.x - Math.sin(yaw)*7, player.position.y+3.5, player.position.z - Math.cos(yaw)*7); camera.lookAt(player.position.x, player.position.y+0.8, player.position.z); renderer.render(scene,camera); } animate();
 </script>
 </body>
 </html>
