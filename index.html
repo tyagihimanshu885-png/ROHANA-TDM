@@ -3,61 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ROHANA TDM - Full Map</title>
+<title>ROHANA TDM - FIXED</title>
 <style>
- body{margin:0;overflow:hidden;background:#d2b48c;touch-action:none}
+ body{margin:0;overflow:hidden;background:#c9a27a;touch-action:none}
  #info{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.75);color:#fff;padding:8px 12px;border-radius:8px;font-size:11px;z-index:10}
- #joy{position:absolute;bottom:20px;left:20px;width:130px;height:130px;background:rgba(255,255,255,0.25);border-radius:50%;border:2px solid rgba(255,255,255,0.4);z-index:10}
- #knob{position:absolute;width:55px;height:55px;background:rgba(255,255,255,0.9);border-radius:50%;left:37px;top:37px}
- #cam{position:absolute;top:0;right:0;width:65%;height:100%;z-index:5}
+ #joy{position:absolute;bottom:20px;left:20px;width:135px;height:135px;background:rgba(255,255,255,0.22);border-radius:50%;border:2px solid rgba(255,255,255,0.35);z-index:10}
+ #knob{position:absolute;width:58px;height:58px;background:rgba(255,255,255,0.95);border-radius:50%;left:38px;top:38px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+ #cam{position:absolute;top:0;right:0;width:62%;height:100%;z-index:5}
 </style>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 </head>
 <body>
-<div id="info">🚜 ROHANA TDM - FULL MAP<br>Photo wala sab kuch hai!</div>
+<div id="info">🚜 ROHANA TDM - FIXED<br>Joystick fixed | Camera up/down</div>
 <div id="joy"><div id="knob"></div></div><div id="cam"></div>
 <script type="module">
 import * as THREE from 'three';
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0xE8D5B5); scene.fog=new THREE.Fog(0xE8D5B5,20,70);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xE8D0A5); scene.fog=new THREE.Fog(0xE8D0A5,18,65);
 const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,1000);
-const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setSize(window.innerWidth,window.innerHeight); renderer.shadowMap.enabled=true; document.body.appendChild(renderer.domElement);
-const sun=new THREE.DirectionalLight(0xffffff,1.1); sun.position.set(20,30,10); sun.castShadow=true; scene.add(sun); scene.add(new THREE.AmbientLight(0xffffff,0.7));
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(40,30),new THREE.MeshStandardMaterial({color:0xC49A6C})); floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
-function wall(x,z,w,d,c=0xB94E48){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,2.5,d),new THREE.MeshStandardMaterial({color:c})); m.position.set(x,1.25,z); m.castShadow=true; m.receiveShadow=true; scene.add(m); }
-// Outer boundary
-wall(0,15,16,1); wall(0,-15,16,1); wall(-20,0,1,30); wall(20,0,1,30);
-wall(12,15,16,1); wall(-12,15,16,1); wall(12,-15,16,1); wall(-12,-15,16,1);
-// L-walls - 4 corners me jaise photo me hai
-function Lwall(x,z,rot=0){ const g=new THREE.Group(); const a=new THREE.Mesh(new THREE.BoxGeometry(3,2,0.8),new THREE.MeshStandardMaterial({color:0xB94E48})); a.position.set(1.2,1,0); const b=new THREE.Mesh(new THREE.BoxGeometry(0.8,2,3),new THREE.MeshStandardMaterial({color:0xB94E48})); b.position.set(0,1,1.2); g.add(a,b); g.position.set(x,0,z); g.rotation.y=rot; scene.add(g); }
-Lwall(-17,7,0); Lwall(17,7,1.57); Lwall(-17,-7,4.7); Lwall(17,-7,3.14);
-// Central Bunker - photo jaisa bada
-const centerGroup=new THREE.Group();
-const base=new THREE.Mesh(new THREE.BoxGeometry(7,1.2,5),new THREE.MeshStandardMaterial({color:0xD2A679})); base.position.y=0.6; centerGroup.add(base);
-for(let pos of [[-2.5,0,1.5],[2.5,0,1.5],[-2.5,0,-1.5],[2.5,0,-1.5]]){ const bale=new THREE.Mesh(new THREE.BoxGeometry(1.2,1,0.9),new THREE.MeshStandardMaterial({color:0xD9B25F})); bale.position.set(pos[0],1.2,pos[2]); centerGroup.add(bale); }
-centerGroup.position.set(0,0,0); scene.add(centerGroup);
-// Curved fences - 4 taraf
-function curvedFence(x,z,rot){ const g=new THREE.Group(); for(let i=0;i<6;i++){ const p=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.8,0.6),new THREE.MeshStandardMaterial({color:0x8B5A2B})); p.position.set(Math.sin(i*0.3)*2,0.4,Math.cos(i*0.3)*0.5); p.rotation.y=i*0.3; g.add(p); } g.position.set(x,0,z); g.rotation.y=rot; scene.add(g); }
-curvedFence(-4,4.5,0.5); curvedFence(4,4.5,-0.5); curvedFence(-4,-4.5,-0.5); curvedFence(4,-4.5,0.5);
-// Haystack clusters & Trolleys - exact photo positions
-function hay(x,z,s=1){ const m=new THREE.Mesh(new THREE.CylinderGeometry(0.7*s,0.8*s,1.2,8),new THREE.MeshStandardMaterial({color:0xE6C27A})); m.position.set(x,0.6,z); m.castShadow=true; scene.add(m); }
-function hayCluster(x,z){ for(let i=0;i<4;i++) hay(x+(Math.random()-0.5)*1.5, z+(Math.random()-0.5)*1.5, 1); }
-function trolley(x,z,rot){ const g=new THREE.Group(); const body=new THREE.Mesh(new THREE.BoxGeometry(2,0.8,3.2),new THREE.MeshStandardMaterial({color:0x6B4423})); body.position.y=0.4; const hayLoad=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.6,2.5),new THREE.MeshStandardMaterial({color:0xE6C27A})); hayLoad.position.y=1.1; g.add(body,hayLoad); g.position.set(x,0,z); g.rotation.y=rot; g.castShadow=true; scene.add(g); }
-// Positions as per photo
-trolley(-13,9,0.8); trolley(13,9,-0.8); trolley(-13,-9,-0.8); trolley(13,-9,0.8);
-hayCluster(-10,1); hayCluster(10,1); hayCluster(-9,10); hayCluster(9,10); hayCluster(-9,-10); hayCluster(9,-10);
-// Small hay scatters
-for(let i=0;i<12;i++) hay((Math.random()-0.5)*36, (Math.random()-0.5)*26, 0.5);
+const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setSize(window.innerWidth,window.innerHeight); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; document.body.appendChild(renderer.domElement);
+scene.add(new THREE.AmbientLight(0xffffff,0.75));
+const sun=new THREE.DirectionalLight(0xffe9c8,1.15); sun.position.set(15,25,10); sun.castShadow=true; sun.shadow.mapSize.set(1024,1024); scene.add(sun);
 
-const player=new THREE.Mesh(new THREE.CapsuleGeometry(0.4,1,4,8),new THREE.MeshStandardMaterial({color:0x111})); player.position.set(0,1,-12); scene.add(player);
-let yaw=0, moveX=0, moveZ=0; const joy=document.getElementById('joy'), knob=document.getElementById('knob'); let active=false, cx=0, cy=0;
+// Ground - Photo jaisa texture wala
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(40,30),new THREE.MeshStandardMaterial({color:0xB78A5E, roughness:0.95})); floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+// Small grass patches photo jaisa
+function grass(x,z){ const m=new THREE.Mesh(new THREE.CircleGeometry(0.8,6),new THREE.MeshStandardMaterial({color:0x8A9A5B, transparent:true, opacity:0.35})); m.rotation.x=-Math.PI/2; m.position.set(x,0.02,z); scene.add(m); }
+grass(-4,4); grass(4,4); grass(-4,-4); grass(4,-4);
+
+function wall(x,z,w,d,c=0xC25A4F){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,2.6,d),new THREE.MeshStandardMaterial({color:c})); m.position.set(x,1.3,z); m.castShadow=true; m.receiveShadow=true; scene.add(m); }
+// Outer walls with gap for spawn - photo jaisa
+wall(0,15,14,1); wall(0,-15,14,1); wall(-20,0,1,30); wall(20,0,1,30); wall(12,15,14,1); wall(-12,15,14,1); wall(12,-15,14,1); wall(-12,-15,14,1);
+// L walls
+function Lwall(x,z,rot){ const g=new THREE.Group(); const a=new THREE.Mesh(new THREE.BoxGeometry(3.2,1.8,0.8),new THREE.MeshStandardMaterial({color:0xC25A4F})); a.position.set(1.2,0.9,0); a.castShadow=true; const b=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.8,3.2),new THREE.MeshStandardMaterial({color:0xC25A4F})); b.position.set(0,0.9,1.2); b.castShadow=true; g.add(a,b); g.position.set(x,0,z); g.rotation.y=rot; scene.add(g); }
+Lwall(-17,7,0); Lwall(17,7,1.57); Lwall(-17,-7,4.71); Lwall(17,-7,3.14);
+
+// Central Bunker - Photo jaisa improved
+const center=new THREE.Group();
+const base=new THREE.Mesh(new THREE.BoxGeometry(7,1,5),new THREE.MeshStandardMaterial({color:0xA67C52})); base.position.y=0.5; base.castShadow=true; center.add(base);
+const straw=new THREE.Mesh(new THREE.BoxGeometry(6,0.6,4),new THREE.MeshStandardMaterial({color:0xD7B96A})); straw.position.y=1.3; straw.castShadow=true; center.add(straw);
+// Hay bales on bunker corners
+[[-2.6,1.1,1.6],[2.6,1.1,1.6],[-2.6,1.1,-1.6],[2.6,1.1,-1.6]].forEach(p=>{ const b=new THREE.Mesh(new THREE.BoxGeometry(1.1,0.9,0.8),new THREE.MeshStandardMaterial({color:0xD9B25F})); b.position.set(p[0],p[1],p[2]); b.castShadow=true; center.add(b); });
+center.position.set(0,0,0); scene.add(center);
+
+// Curved fences
+function curvedFence(x,z,rot){ const g=new THREE.Group(); for(let i=0;i<7;i++){ const p=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.85,0.65),new THREE.MeshStandardMaterial({color:0x6B4F2E})); p.position.set(Math.sin(i*0.28)*2.1,0.42,Math.cos(i*0.28)*0.4); p.rotation.y=i*0.28; p.castShadow=true; g.add(p); } g.position.set(x,0,z); g.rotation.y=rot; scene.add(g); }
+curvedFence(-4,4.8,0.6); curvedFence(4,4.8,-0.6); curvedFence(-4,-4.8,-0.6); curvedFence(4,-4.8,0.6);
+
+// Hay & Trolleys - Photo exact positions with better graphics
+function hay(x,z,s=1){ const g=new THREE.Group(); const m=new THREE.Mesh(new THREE.CylinderGeometry(0.65*s,0.8*s,1.1*s,10),new THREE.MeshStandardMaterial({color:0xEAC87A, roughness:0.9})); m.position.y=0.55*s; m.castShadow=true; g.add(m); g.position.set(x,0,z); scene.add(g); }
+function hayCluster(x,z){ for(let i=0;i<4;i++) hay(x+(Math.random()-0.5)*1.4, z+(Math.random()-0.5)*1.4, 1.1); }
+function trolley(x,z,rot){ const g=new THREE.Group(); const body=new THREE.Mesh(new THREE.BoxGeometry(2.1,0.9,3.3),new THREE.MeshStandardMaterial({color:0x5A3A1F})); body.position.y=0.45; body.castShadow=true; const load=new THREE.Mesh(new THREE.SphereGeometry(0.9,8,6),new THREE.MeshStandardMaterial({color:0xEAC87A})); load.position.set(0,1.2,0); load.scale.set(1,0.7,1.4); g.add(body,load); g.position.set(x,0,z); g.rotation.y=rot; scene.add(g); }
+trolley(-12.5,9,0.9); trolley(12.5,9,-0.9); trolley(-12.5,-9,-0.9); trolley(12.5,-9,0.9);
+hayCluster(-10.5,1.2); hayCluster(10.5,1.2); hayCluster(-9,10.5); hayCluster(9,10.5); hayCluster(-9,-10.5); hayCluster(9,-10.5);
+for(let i=0;i<16;i++) hay((Math.random()-0.5)*36, (Math.random()-0.5)*26, 0.45+Math.random()*0.3);
+
+const player=new THREE.Mesh(new THREE.CapsuleGeometry(0.38,0.9,4,8),new THREE.MeshStandardMaterial({color:0x1a1a1a})); player.position.set(0,1,-12.5); scene.add(player);
+
+// --- FIXED CONTROLS ---
+let yaw=0, pitch=0.15, moveX=0, moveZ=0;
+const joy=document.getElementById('joy'), knob=document.getElementById('knob'); let active=false, cx=0, cy=0;
 joy.addEventListener('touchstart',e=>{ active=true; const r=joy.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2; e.preventDefault(); },{passive:false});
-joy.addEventListener('touchmove',e=>{ if(!active) return; const t=e.touches[0]; let dx=t.clientX-cx, dy=t.clientY-cy; const max=45; const dist=Math.sqrt(dx*dx+dy*dy); if(dist>max){ dx=dx/dist*max; dy=dy/dist*max; } knob.style.left=(37+dx)+'px'; knob.style.top=(37+dy)+'px'; moveX=dx/max; moveZ=dy/max; e.preventDefault(); },{passive:false});
-joy.addEventListener('touchend',e=>{ active=false; knob.style.left='37px'; knob.style.top='37px'; moveX=0; moveZ=0; e.preventDefault(); });
-const camArea=document.getElementById('cam'); let lastX=0;
-camArea.addEventListener('touchstart',e=>{ lastX=e.touches[0].clientX; },{passive:false});
-camArea.addEventListener('touchmove',e=>{ const dx=e.touches[0].clientX-lastX; yaw-=dx*0.01; lastX=e.touches[0].clientX; e.preventDefault(); },{passive:false});
-const SPEED=0.11;
-function animate(){ requestAnimationFrame(animate); const fwd=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)); const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)); player.position.addScaledVector(fwd,-moveZ*SPEED); player.position.addScaledVector(right,moveX*SPEED); player.position.x=Math.max(-18,Math.min(18,player.position.x)); player.position.z=Math.max(-13,Math.min(13,player.position.z)); camera.position.set(player.position.x - Math.sin(yaw)*7, player.position.y+3.5, player.position.z - Math.cos(yaw)*7); camera.lookAt(player.position.x, player.position.y+0.8, player.position.z); renderer.render(scene,camera); } animate();
+joy.addEventListener('touchmove',e=>{
+  if(!active) return; const t=e.touches[0]; let dx=t.clientX-cx, dy=t.clientY-cy; const max=46; const dist=Math.hypot(dx,dy); if(dist>max){ dx=dx/dist*max; dy=dy/dist*max; }
+  knob.style.left=(38+dx)+'px'; knob.style.top=(38+dy)+'px'; moveX=dx/max; moveZ=dy/max; e.preventDefault();
+},{passive:false});
+joy.addEventListener('touchend',e=>{ active=false; knob.style.left='38px'; knob.style.top='38px'; moveX=0; moveZ=0; e.preventDefault(); });
+
+// Camera: left/right + up/down both!
+const camArea=document.getElementById('cam'); let lastX=0, lastY=0;
+camArea.addEventListener('touchstart',e=>{ lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; },{passive:false});
+camArea.addEventListener('touchmove',e=>{
+  const dx=e.touches[0].clientX-lastX; const dy=e.touches[0].clientY-lastY;
+  yaw -= dx*0.008; // left/right
+  pitch += dy*0.008; // up/down - FIX 2
+  pitch=Math.max(-0.4,Math.min(0.7,pitch)); // limit
+  lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; e.preventDefault();
+},{passive:false});
+
+const SPEED=0.115;
+function animate(){
+  requestAnimationFrame(animate);
+  const fwd=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
+  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+  // FIX 1: left/right ulta tha - minus kar diya
+  player.position.addScaledVector(fwd, -moveZ*SPEED);
+  player.position.addScaledVector(right, -moveX*SPEED); // <- FIX LEFT/RIGHT
+  player.position.x=Math.max(-18,Math.min(18,player.position.x));
+  player.position.z=Math.max(-13.5,Math.min(13.5,player.position.z));
+  const dist=7; const cosP=Math.cos(pitch); const sinP=Math.sin(pitch);
+  // Camera behind + up/down pitch
+  camera.position.set(
+    player.position.x - Math.sin(yaw)*cosP*dist,
+    player.position.y + 2.2 + sinP*4,
+    player.position.z - Math.cos(yaw)*cosP*dist
+  );
+  camera.lookAt(player.position.x, player.position.y+0.7, player.position.z);
+  renderer.render(scene,camera);
+}
+animate();
+addEventListener('resize',()=>{ camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight); });
 </script>
 </body>
 </html>
