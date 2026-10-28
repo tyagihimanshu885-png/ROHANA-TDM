@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DESI TDM - 40x30 Fixed Map</title>
+<style>
+ body{margin:0;overflow:hidden;background:#d2b48c}
+ #info{position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.75);color:#fff;padding:10px 15px;border-radius:10px;font-size:13px;line-height:1.4}
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+<div id="info">🚜 DESI TDM - 40x30m FIXED<br>
+WASD = Daudo | Mouse dabake ghumao<br>
+Speed: 6.2 m/s Sprint (BGMI Exact)<br>
+Ek kone se dusre kone tak: ~8 sec</div>
+<script type="module">
+import * as THREE from 'three';
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xE8D5B5);
+scene.fog = new THREE.Fog(0xE8D5B5, 25, 80);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+sun.position.set(20,30,10); sun.castShadow=true;
+scene.add(sun); scene.add(new THREE.AmbientLight(0xffffff,0.6));
+
+// Floor 40x30 - Mitti
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40,30), new THREE.MeshStandardMaterial({color:0xC19A6B}));
+floor.rotation.x = -Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+const grid = new THREE.GridHelper(40,20,0x8B7355,0x8B7355); grid.position.y=0.02; scene.add(grid);
+
+function wall(x,z,w,d,color=0xB94E48){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,2.5,d), new THREE.MeshStandardMaterial({color}));
+  m.position.set(x,1.25,z); m.castShadow=true; scene.add(m);
+}
+wall(0,15,40,1); wall(0,-15,40,1); wall(-20,0,1,30); wall(20,0,1,30);
+wall(0,0,6,4,0xD2A679);
+
+function hay(x,z){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.9,1.2,8), new THREE.MeshStandardMaterial({color:0xE6C27A}));
+  m.position.set(x,0.6,z); scene.add(m);
+}
+function trolley(x,z){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(2,1,3), new THREE.MeshStandardMaterial({color:0x8B5A2B}));
+  m.position.set(x,0.5,z); m.castShadow=true; scene.add(m); hay(x+1.2,z);
+}
+trolley(-12,8); trolley(12,8); trolley(-12,-8); trolley(12,-8);
+[[-10,0],[10,0],[-10,10],[10,10],[-10,-10],[10,-10]].forEach(p=>{
+  for(let i=0;i<3;i++) hay(p[0]+(Math.random()-0.5)*2, p[1]+(Math.random()-0.5)*2);
+});
+
+// Player
+const player = new THREE.Mesh(new THREE.CapsuleGeometry(0.4,1,4,8), new THREE.MeshStandardMaterial({color:0x222}));
+player.position.set(0,1,-12); scene.add(player);
+
+let keys={}; addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+let yaw=0;
+addEventListener('mousemove',e=>{ if(e.buttons===1) yaw-=e.movementX*0.005; });
+
+// BGMI EXACT SPEED - 6.2 m/s
+// 60 FPS pe 6.2 / 60 = 0.103 per frame
+const BGMI_SPRINT_SPEED = 0.103;
+
+function animate(){
+  requestAnimationFrame(animate);
+  const fwd = new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
+  const right = new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+  if(keys['w']) player.position.addScaledVector(fwd, BGMI_SPRINT_SPEED);
+  if(keys['s']) player.position.addScaledVector(fwd, -BGMI_SPRINT_SPEED);
+  if(keys['a']) player.position.addScaledVector(right, -BGMI_SPRINT_SPEED);
+  if(keys['d']) player.position.addScaledVector(right, BGMI_SPRINT_SPEED);
+  player.position.x=Math.max(-18,Math.min(18,player.position.x));
+  player.position.z=Math.max(-13,Math.min(13,player.position.z));
+  camera.position.set(player.position.x + Math.sin(yaw)*8, player.position.y+4, player.position.z + Math.cos(yaw)*8);
+  camera.lookAt(player.position);
+  renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>
